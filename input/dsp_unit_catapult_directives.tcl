@@ -1,0 +1,8 @@
+if { $CATAPULT_SOLUTION_NAME == "UNCONSTRAINED" } {
+
+} elseif { $CATAPULT_SOLUTION_NAME == "ASAP" } {
+
+} elseif { $CATAPULT_SOLUTION_NAME == "OPTIMIZED" } {
+
+}
+

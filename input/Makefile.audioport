@@ -1,0 +1,217 @@
+######################################################################################
+# Top module name
+#######################################################################################
+
+DESIGN_NAME=	audioport
+DESIGN_TOP=     audioport_tb
+
+export FORCED_DESIGN_NAME= $(DESIGN_NAME)
+
+######################################################################################
+# List of UVM tests to be run.
+#######################################################################################
+
+TESTS=		control_unit_uvm_test \
+		audioport_uvm_test
+
+######################################################################################
+# Single UVM test for target 'debug' for interactive simulation
+#######################################################################################
+
+UVM_TESTNAME=	audioport_uvm_test
+CDC_TEST=	audioport_uvm_test
+
+######################################################################################
+# Source code files
+#######################################################################################
+
+DESIGN_FILES= 	input/apb_pkg.sv \
+		input/audioport_pkg.sv \
+		input/audioport_util_pkg.sv
+
+RTL_FILES=	input/control_unit.sv \
+		results/dsp_unit_hls_rtl.v \
+		input/dsp_unit.sv \
+		input/cdc_unit.sv \
+		input/i2s_unit.vhd \
+		input/audioport.sv
+
+SVA_FILES=	input/control_unit_svamod.sv \
+		input/dsp_unit_svamod.sv \
+		input/cdc_unit_svamod.sv \
+		input/i2s_unit_svamod.sv  \
+		input/audioport_svamod.sv
+
+TESTBENCH_FILES= \
+		input/apb_if.sv \
+		input/irq_out_if.sv \
+		input/i2s_if.sv \
+                input/uvm/apb_env_pkg.sv \
+		input/uvm/control_unit_env_pkg.sv \
+		input/uvm/audioport_env_pkg.sv \
+		input/uvm/audioport_uvm_tests_pkg.sv \
+		input/audioport_tb.sv
+
+
+######################################################################################
+# EDA tool launch commands
+#######################################################################################
+
+QRUN= run/qrun
+
+CATAPULT= run/catapult
+
+######################################################################################
+# Options for QuestaSim QRUN
+#######################################################################################
+
+INPUT_FILES= $(DESIGN_FILES) $(RTL_FILES) $(SVA_FILES) $(TESTBENCH_FILES)
+
+QRUN_COMPILE_OPTIONS=	\
+		+incdir+input \
+		+define+design_top_is_$(DESIGN_NAME) \
+		+define+DESIGN_NAME_MACRO=$(DESIGN_NAME) \
+		+define+RTL_SIM \
+                +define+UVM_TESTBENCH \
+		-fsmdebug \
+		-fsmverbose b \
+		-fsmmultitrans \
+		-coverage \
+		+cover=bcxefs \
+		-coverfec \
+		+acc \
+	        -top $(DESIGN_TOP)
+
+QRUN_SIM_OPTIONS=	\
+		-coverage \
+		+cover=bcxefs \
+		-coverfec \
+		-uvm \
+		-uvmcontrol=all \
+		-classdebug \
+		-do scripts/vsim_rtlrun.tcl
+
+
+QRUN_DEBUG_OPTIONS=	\
+		+incdir+input \
+		+define+design_top_is_$(DESIGN_NAME) \
+		+define+DESIGN_NAME_MACRO=$(DESIGN_NAME) \
+		+define+RTL_SIM \
+                +define+UVM_TESTBENCH \
+		-fsmdebug \
+		-fsmverbose b \
+		-fsmmultitrans \
+		-assertdebug \
+		-coverage \
+		+cover=bcxefs \
+		-coverfec \
+		-uvm \
+		-uvmcontrol=all \
+		-classdebug \
+	        -top $(DESIGN_TOP) \
+		-do scripts/vsim_rtlrun.tcl
+
+LAUNCH_DIR=	$(PWD)
+
+COMPILE_TARGET= results/$(DESIGN_NAME)_compile_date.txt
+
+TEST_TARGETS=   $(patsubst %,results/%_run_date.txt,  $(TESTS))
+
+######################################################################################
+# MAIN TARGETS:
+#   help:    shows help
+#   all:     run all tests
+#   compile: compile but do not simulate
+#   clean:   remove all results
+#   debug:   run interactive simulation with $UVM_TESTNAME
+######################################################################################
+
+help:
+	@echo "Usage:"
+	@echo "make help:    Prints out this message."
+	@echo "make all:     Compiles allf iles and simulates all tests."
+	@echo "make compile: Compiles all files without simulating."
+	@echo "make debug:   Run interactive simulation of the selected test."
+
+
+all:	$(TEST_TARGETS)
+	@echo "------------------------------------------------------------------------------------------"
+	echo RESULTS; \
+	echo "-------------------------------------------------------------------------------------------"; \
+	for r in $(TESTS); do echo -n $$r ": " ; cat reports/3_vsim_$(DESIGN_NAME)_rtl_sim_status_$$r.txt; done
+
+compile: $(COMPILE_TARGET)
+
+clean:
+	rm -f $(COMPILE_TARGET) $(TEST_TARGETS) results/audioport_rtl_sim_*.ucdb
+
+
+# Static pattern rule for test targets: 
+# $* (stem) is test name, $@ (target) is simulation status file to be created.
+$(TEST_TARGETS): results/%_run_date.txt: $(COMPILE_TARGET)
+	@echo " "; \
+	echo "Running test: " $*; \
+	echo " ";
+	export UVM_TESTNAME=$*; \
+	echo -n $* " "; \
+	rm -f $@; \
+	rm -f results/$(DESIGN_NAME)_rtl_sim_coverage_$*.ucdb; \
+        $(QRUN) -simulate -snapshot $(DESIGN_NAME)_vopt $(QRUN_SIM_OPTIONS) +UVM_TESTNAME=$* \
+             -l reports/3_vsim_$(DESIGN_NAME)_$*_log.txt; \
+	cat reports/3_vsim_$(DESIGN_NAME)_rtl_sim_status_$*.txt
+	touch $@
+
+
+# Compilation target
+$(COMPILE_TARGET): $(INPUT_FILES)
+	@echo "############################################################################################"; \
+	echo COMPILATION; \
+	echo "############################################################################################";
+	$(QRUN) -clean -optimize $(INPUT_FILES) $(QRUN_COMPILE_OPTIONS) \
+		-snapshot $(DESIGN_NAME)_vopt \
+		-l reports/3_vsim_$(DESIGN_NAME)_compile_log.txt
+	touch $(COMPILE_TARGET)
+
+
+# Run interactive simulation on selected UVM_TESTNAME
+debug:
+	$(QRUN) -clean $(INPUT_FILES) $(QRUN_DEBUG_OPTIONS) +UVM_TESTNAME=$(UVM_TESTNAME) \
+	-gui -debug -visualizer
+
+######################################################################################
+# Additional targets
+######################################################################################
+
+# CDC verification
+cdc:
+	@echo -n "CDC analysis " 
+	@export UVM_TESTNAME=$(CDC_TEST); \
+	qverify -c -od output/$(DESIGN_NAME)_qcdc_run_log \
+           -do scripts/qcdc_static.tcl \
+	   -l $(LAUNCH_DIR)/reports/3_qcdc_$(DESIGN_NAME)_static_analysis_log.txt > /dev/null 
+	@echo -n "CDC sim: " 
+	@$(QHOME)/modeltech/plat/vsim -c -do scripts/vsim_cdcsim.tcl
+	@cat reports/3_vsim_$(DESIGN_NAME)_rtl_cdc_sim_status_$(CDC_TEST).txt
+	@echo -n "CDCFX sim: "
+	@$(QHOME)/modeltech/plat/vsim -c -do scripts/vsim_cdcfxsim.tcl
+	@cat reports/3_vsim_$(DESIGN_NAME)_rtl_cdcfx_sim_status_$(CDC_TEST).txt;
+
+
+
+# Bring dsp_unit RTL code up-to-date with Catapult
+results/dsp_unit_hls_rtl.v: input/dsp_unit.cpp input/dsp_unit.h input/dsp_unit_catapult_directives.tcl
+	export FORCED_DESIGN_NAME=dsp_unit; \
+	$(CATAPULT) -product ultra -shell -file scripts/2_catapult_hls.tcl
+
+
+# Create run directory for Questa Verification Run Manager simulations
+
+vrmrundir:
+	rm -f input reports results run scripts
+	rm -rf output
+	ln -s $(PROJECTDIR)/input   input
+	ln -s $(PROJECTDIR)/reports reports
+	ln -s $(PROJECTDIR)/results results
+	ln -s $(PROJECTDIR)/run     run
+	ln -s $(PROJECTDIR)/scripts scripts
+	mkdir                       output

@@ -1,0 +1,69 @@
+CONNECTION_DEFINITION_TABLE
+CONNECTION , clk_to_control_unit_1 , ,clk , control_unit_1, clk
+CONNECTION , control_unit_1_to_PRDATA, control_unit_1, PRDATA ,  ,PRDATA
+CONNECTION , rst_n_to_control_unit_1 , ,rst_n , control_unit_1, rst_n
+CONNECTION , control_unit_1_to_PSLVERR, control_unit_1, PSLVERR ,  ,PSLVERR
+CONNECTION , PSEL_to_control_unit_1 , ,PSEL , control_unit_1, PSEL
+CONNECTION , control_unit_1_to_PREADY, control_unit_1, PREADY ,  ,PREADY
+CONNECTION , PENABLE_to_control_unit_1 , ,PENABLE , control_unit_1, PENABLE
+CONNECTION , control_unit_1_to_irq_out, control_unit_1, irq_out ,  ,irq_out
+CONNECTION , PWRITE_to_control_unit_1 , ,PWRITE , control_unit_1, PWRITE
+CONNECTION , control_unit_1_to_cfg_reg, control_unit_1, cfg_reg_out ,  ,cfg_reg
+CONNECTION , PADDR_to_control_unit_1 , ,PADDR , control_unit_1, PADDR
+CONNECTION , control_unit_1_to_level_reg, control_unit_1, level_reg_out ,  ,level_reg
+CONNECTION , PWDATA_to_control_unit_1 , ,PWDATA , control_unit_1, PWDATA
+CONNECTION , control_unit_1_to_dsp_regs, control_unit_1, dsp_regs_out ,  ,dsp_regs
+CONNECTION , req_to_control_unit_1 , ,req , control_unit_1, req_in
+CONNECTION , control_unit_1_to_cfg, control_unit_1, cfg_out ,  ,cfg
+CONNECTION , control_unit_1_to_clr, control_unit_1, clr_out ,  ,clr
+CONNECTION , control_unit_1_to_level, control_unit_1, level_out ,  ,level
+CONNECTION , control_unit_1_to_tick, control_unit_1, tick_out ,  ,tick
+CONNECTION , control_unit_1_to_audio0, control_unit_1, audio0_out ,  ,audio0
+CONNECTION , control_unit_1_to_audio1, control_unit_1, audio1_out ,  ,audio1
+CONNECTION , control_unit_1_to_play, control_unit_1, play_out ,  ,play
+CONNECTION , clk_to_dsp_unit_1 , ,clk , dsp_unit_1, clk
+CONNECTION , dsp_unit_1_to_dsp0, dsp_unit_1, dsp0_out ,  ,dsp0
+CONNECTION , dsp_unit_1_to_dsp1, dsp_unit_1, dsp1_out ,  ,dsp1
+CONNECTION , rst_n_to_dsp_unit_1 , ,rst_n , dsp_unit_1, rst_n
+CONNECTION , dsp_unit_1_to_dsp_tick, dsp_unit_1, valid_out ,  ,dsp_tick
+CONNECTION , audio0_to_dsp_unit_1 , ,audio0 , dsp_unit_1, audio0_in
+CONNECTION , audio1_to_dsp_unit_1 , ,audio1 , dsp_unit_1, audio1_in
+CONNECTION , tick_to_dsp_unit_1 , ,tick , dsp_unit_1, tick_in
+CONNECTION , cfg_to_dsp_unit_1 , ,cfg , dsp_unit_1, cfg_in
+CONNECTION , cfg_reg_to_dsp_unit_1 , ,cfg_reg , dsp_unit_1, cfg_reg_in
+CONNECTION , dsp_regs_to_dsp_unit_1 , ,dsp_regs , dsp_unit_1, dsp_regs_in
+CONNECTION , level_to_dsp_unit_1 , ,level , dsp_unit_1, level_in
+CONNECTION , level_reg_to_dsp_unit_1 , ,level_reg , dsp_unit_1, level_reg_in
+CONNECTION , clr_to_dsp_unit_1 , ,clr , dsp_unit_1, clr_in
+CONNECTION , clk_to_cdc_unit_1 , ,clk , cdc_unit_1, clk
+CONNECTION , cdc_unit_1_to_mrst_n, cdc_unit_1, mrst_n ,  ,mrst_n
+CONNECTION , cdc_unit_1_to_mclk_mux, cdc_unit_1, mclk,  ,mclk_mux
+CONNECTION , rst_n_to_cdc_unit_1 , ,rst_n , cdc_unit_1, rst_n
+CONNECTION , cdc_unit_1_to_mdsp0, cdc_unit_1, dsp0_out ,  ,mdsp0
+CONNECTION , cdc_unit_1_to_mdsp1, cdc_unit_1, dsp1_out ,  ,mdsp1
+CONNECTION , dsp0_to_cdc_unit_1 , ,dsp0 , cdc_unit_1, dsp0_in
+CONNECTION , dsp1_to_cdc_unit_1 , ,dsp1 , cdc_unit_1, dsp1_in
+CONNECTION , cdc_unit_1_to_mtick, cdc_unit_1, tick_out ,  ,mtick
+CONNECTION , dsp_tick_to_cdc_unit_1 , ,dsp_tick , cdc_unit_1, tick_in
+CONNECTION , cdc_unit_1_to_mcfg, cdc_unit_1, cfg_out ,  ,mcfg
+CONNECTION , cfg_to_cdc_unit_1 , ,cfg , cdc_unit_1, cfg_in
+CONNECTION , cdc_unit_1_to_mcfg_reg, cdc_unit_1, cfg_reg_out ,  ,mcfg_reg
+CONNECTION , cfg_reg_to_cdc_unit_1 , ,cfg_reg , cdc_unit_1, cfg_reg_in
+CONNECTION , cdc_unit_1_to_mplay, cdc_unit_1, play_out ,  ,mplay
+CONNECTION , play_to_cdc_unit_1 , ,play , cdc_unit_1, play_in
+CONNECTION , cdc_unit_1_to_req, cdc_unit_1, req_out ,  ,req
+CONNECTION , mclk_to_cdc_unit_1 , ,mclk , cdc_unit_1, mclk_in
+CONNECTION , mreq_to_cdc_unit_1 , ,mreq , cdc_unit_1, req_in
+CONNECTION , mclk_to_i2s_unit_1 , ,mclk_mux , i2s_unit_1, clk
+CONNECTION , i2s_unit_1_to_mreq, i2s_unit_1, req_out ,  ,mreq
+CONNECTION , mrst_n_to_i2s_unit_1 , ,mrst_n , i2s_unit_1, rst_n
+CONNECTION , i2s_unit_1_to_sck_out, i2s_unit_1, sck_out ,  ,sck_out
+CONNECTION , mplay_to_i2s_unit_1 , ,mplay , i2s_unit_1, play_in
+CONNECTION , i2s_unit_1_to_ws_out, i2s_unit_1, ws_out ,  ,ws_out
+CONNECTION , mdsp0_to_i2s_unit_1 , ,mdsp0 , i2s_unit_1, audio0_in
+CONNECTION , i2s_unit_1_to_sdo_out, i2s_unit_1, sdo_out ,  ,sdo_out
+CONNECTION , mdsp1_to_i2s_unit_1 , ,mdsp1 , i2s_unit_1, audio1_in
+CONNECTION , mtick_to_i2s_unit_1 , ,mtick , i2s_unit_1, tick_in
+CONNECTION , mcfg_to_i2s_unit_1 , ,mcfg , i2s_unit_1, cfg_in
+CONNECTION , mcfg_reg_to_i2s_unit_1 , ,mcfg_reg , i2s_unit_1, cfg_reg_in
+CONNECTION_DEFINITION_TABLE_END
