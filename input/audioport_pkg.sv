@@ -9,13 +9,13 @@ package audioport_pkg;
    //////////////////////////////////////////////////////////////////
 
 `ifndef SYNTHESIS
-   string mynumber                     = "123456";   // At least 6 last digits of your student number
-   localparam real CLK_PERIOD          = 17.5;        // Clock period
+   string mynumber                     = "2207831";   // At least 6 last digits of your student number
+   localparam real CLK_PERIOD          = 18.5;        // Clock period
    localparam real MCLK_PERIOD         = 54.25347222; // Same for all students
 `endif
    localparam int FILTER_TAPS          = 47;
    localparam int AUDIO_BUFFER_SIZE    = 32;
-   localparam int CMD_WAIT_STATES      = 0; // Set manually to 6 + int'($ceil(6.0*MCLK_PERIOD/CLK_PERIOD)
+   localparam int CMD_WAIT_STATES      = 24; // Set manually to 6 + int'($ceil(6.0*MCLK_PERIOD/CLK_PERIOD) 
 
    //////////////////////////////////////////////////////////////////
    //
@@ -24,14 +24,14 @@ package audioport_pkg;
    //////////////////////////////////////////////////////////////////
 
    // Number of coefficient registers for four FIR filters
-   localparam int DSP_REGISTERS        = 1;
+   localparam int DSP_REGISTERS        = 188;
 
    // Number of 24-bit registers in abuf bank (ABUF0 and ABUF1, both AUDIO_BUFFER_SIZE * 2)
-   localparam int ABUF_REGISTERS       = 1;
+   localparam int ABUF_REGISTERS       = 128;
    
 
    // Total number of registers
-   localparam int AUDIOPORT_REGISTERS  = 1;
+   localparam int AUDIOPORT_REGISTERS  = 320;
 
    //////////////////////////////////////////////////////////////////
    //
@@ -40,17 +40,17 @@ package audioport_pkg;
    //////////////////////////////////////////////////////////////////
 
    localparam int CMD_REG_INDEX        = 0;
-   localparam int STATUS_REG_INDEX     = 0;
-   localparam int LEVEL_REG_INDEX      = 0;
-   localparam int CFG_REG_INDEX        = 0;
-   localparam int DSP_REGS_START_INDEX = 0;
-   localparam int DSP_REGS_END_INDEX   = 0;
-   localparam int ABUF0_START_INDEX    = 0;
-   localparam int ABUF0_END_INDEX      = 0;
-   localparam int ABUF1_START_INDEX    = 0;
-   localparam int ABUF1_END_INDEX      = 0;
+   localparam int STATUS_REG_INDEX     = 1;
+   localparam int LEVEL_REG_INDEX      = 2;
+   localparam int CFG_REG_INDEX        = 3;
+   localparam int DSP_REGS_START_INDEX = 4;
+   localparam int DSP_REGS_END_INDEX   = 191;
+   localparam int ABUF0_START_INDEX    = 192;
+   localparam int ABUF0_END_INDEX      = 255;
+   localparam int ABUF1_START_INDEX    = 256;
+   localparam int ABUF1_END_INDEX      = 319;
 
-   localparam int RINDEX_BITS          = 1;// Number of bits in index values
+   localparam int RINDEX_BITS          = 9;// Number of bits in index values
    
    //////////////////////////////////////////////////////////////////
    //
@@ -59,17 +59,17 @@ package audioport_pkg;
    //////////////////////////////////////////////////////////////////   
 
    localparam logic [31:0]  AUDIOPORT_START_ADDRESS  = 32'h8c000000;   
-   localparam logic [31:0]  AUDIOPORT_END_ADDRESS    = 32'h8c000000;   
+   localparam logic [31:0]  AUDIOPORT_END_ADDRESS    = 32'h8c0004FC;   
    localparam logic [31:0]  CMD_REG_ADDRESS          = 32'h8c000000;   
-   localparam logic [31:0]  STATUS_REG_ADDRESS       = 32'h8c000000;   
-   localparam logic [31:0]  LEVEL_REG_ADDRESS        = 32'h8c000000;   
-   localparam logic [31:0]  CFG_REG_ADDRESS          = 32'h8c000000;   
-   localparam logic [31:0]  DSP_REGS_START_ADDRESS   = 32'h8c000000;   
-   localparam logic [31:0]  DSP_REGS_END_ADDRESS     = 32'h8c000000;   
-   localparam logic [31:0]  ABUF0_START_ADDRESS      = 32'h8c000000;   
-   localparam logic [31:0]  ABUF0_END_ADDRESS        = 32'h8c000000;   
-   localparam logic [31:0]  ABUF1_START_ADDRESS      = 32'h8c000000;   
-   localparam logic [31:0]  ABUF1_END_ADDRESS        = 32'h8c000000;   
+   localparam logic [31:0]  STATUS_REG_ADDRESS       = 32'h8c000004;   
+   localparam logic [31:0]  LEVEL_REG_ADDRESS        = 32'h8c000008;   
+   localparam logic [31:0]  CFG_REG_ADDRESS          = 32'h8c00000C;   
+   localparam logic [31:0]  DSP_REGS_START_ADDRESS   = 32'h8c000010;   
+   localparam logic [31:0]  DSP_REGS_END_ADDRESS     = 32'h8c0002FC;   
+   localparam logic [31:0]  ABUF0_START_ADDRESS      = 32'h8c000300;   
+   localparam logic [31:0]  ABUF0_END_ADDRESS        = 32'h8c0003FC;   
+   localparam logic [31:0]  ABUF1_START_ADDRESS      = 32'h8c000400;   
+   localparam logic [31:0]  ABUF1_END_ADDRESS        = 32'h8c0004FC;   
    
    //////////////////////////////////////////////////////////////////
    //

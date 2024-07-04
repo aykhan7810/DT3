@@ -9,11 +9,11 @@
 //
 //////////////////////////////////////////////////////////////////
 
-#define CLK_PERIOD          17.5
+#define CLK_PERIOD          18.5
 #define MCLK_PERIOD         54.25347222
 #define FILTER_TAPS         47
 #define AUDIO_BUFFER_SIZE   32
-#define CMD_WAIT_STATES     0
+#define CMD_WAIT_STATES     24
 
 //////////////////////////////////////////////////////////////////
 //
