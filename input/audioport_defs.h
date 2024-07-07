@@ -21,9 +21,9 @@
 //
 //////////////////////////////////////////////////////////////////
 
-#define DSP_REGISTERS       1
-#define ABUF_REGISTERS      1
-#define AUDIOPORT_REGISTERS 1
+#define DSP_REGISTERS       188
+#define ABUF_REGISTERS      128
+#define AUDIOPORT_REGISTERS 320
 
 //////////////////////////////////////////////////////////////////
 //
@@ -31,17 +31,17 @@
 //
 //////////////////////////////////////////////////////////////////
 
-#define RINDEX_BITS           0
+#define RINDEX_BITS           9
 #define CMD_REG_INDEX         0
-#define STATUS_REG_INDEX      0
-#define LEVEL_REG_INDEX       0
-#define CFG_REG_INDEX         0
-#define DSP_REGS_START_INDEX  0
-#define DSP_REGS_END_INDEX    0
-#define ABUF0_START_INDEX     0
-#define ABUF0_END_INDEX       0
-#define ABUF1_START_INDEX     0
-#define ABUF1_END_INDEX       0
+#define STATUS_REG_INDEX      1
+#define LEVEL_REG_INDEX       2
+#define CFG_REG_INDEX         3
+#define DSP_REGS_START_INDEX  4
+#define DSP_REGS_END_INDEX    191
+#define ABUF0_START_INDEX     192
+#define ABUF0_END_INDEX       255
+#define ABUF1_START_INDEX     256
+#define ABUF1_END_INDEX       319
    
 //////////////////////////////////////////////////////////////////
 //
@@ -50,19 +50,19 @@
 //////////////////////////////////////////////////////////////////   
 
 #define AUDIOPORT_START_ADDRESS  0x8c000000   
-#define AUDIOPORT_END_ADDRESS    0x8c000000   
+#define AUDIOPORT_END_ADDRESS    0x8c0004fc   
 #define CMD_REG_ADDRESS          0x8c000000   
-#define STATUS_REG_ADDRESS       0x8c000000   
-#define LEVEL_REG_ADDRESS        0x8c000000   
-#define CFG_REG_ADDRESS          0x8c000000   
-#define DSP_REGS_START_ADDRESS   0x8c000000   
-#define DSP_REGS_END_ADDRESS     0x8c000000   
-#define ABUF_START_ADDRESS       0x8c000000   
-#define ABUF_END_ADDRESS         0x8c000000   
-#define ABUF0_START_ADDRESS      0x8c000000   
-#define ABUF0_END_ADDRESS        0x8c000000   
-#define ABUF1_START_ADDRESS      0x8c000000   
-#define ABUF1_END_ADDRESS        0x8c000000   
+#define STATUS_REG_ADDRESS       0x8c000004   
+#define LEVEL_REG_ADDRESS        0x8c000008   
+#define CFG_REG_ADDRESS          0x8c00000C   
+#define DSP_REGS_START_ADDRESS   0x8c000010   
+#define DSP_REGS_END_ADDRESS     0x8c0002fc   
+#define ABUF_START_ADDRESS       0x8c000300   
+#define ABUF_END_ADDRESS         0x8c0004fc   
+#define ABUF0_START_ADDRESS      0x8c000300   
+#define ABUF0_END_ADDRESS        0x8c0003fc   
+#define ABUF1_START_ADDRESS      0x8c000400   
+#define ABUF1_END_ADDRESS        0x8c0004fc   
 
 //////////////////////////////////////////////////////////////////
 //

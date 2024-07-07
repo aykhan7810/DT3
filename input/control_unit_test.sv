@@ -25,9 +25,11 @@ program control_unit_test
    // 2. Variable declarations
    logic 				    wfail;
    logic 				    rfail;   
-   logic [31:0] 			    addr;
-   logic [31:0] 			    wdata;
-   logic [31:0] 			    rdata;      
+   logic [31:0] 			addr;
+   logic [31:0] 			wdata;
+   logic [31:0] 			rdata;   
+   logic [31:0]				invalid_addr;
+   logic 					irq_out_state;   
 
    // 3. Task code inclusion
 `include "control_unit_test_tasks.svh"
@@ -43,25 +45,25 @@ program control_unit_test
 	// 6. Run tests
 
 	reset_test;
-	apb_test;
-/*	
-        address_decoding_test;
-	wait_states_test;
-	register_test;
-	cmd_exe_test;
-	cmd_err_test;
-	cmd_start_stop_test;
+	apb_test;	
+    address_decoding_test;
+	wait_states_test; 
+	register_bank_test;
+	//cmd_exe_test;
+	//cmd_err_test;
+	cmd_start_stop_test;	
 	cmd_level_test;
 	cmd_clr_test;
-        clr_err_test;
+    clr_err_test;
 	cmd_cfg_test;
 	cfg_err_test;
-	abuf_test;
+	//abuf_test;
 	interrupt_test;
 	streaming_test;
-	irq_out_stop_test;
-	status_reg_write_test;
-*/	
+	//irq_out_stop_test;
+	//status_reg_write_test;
+
+
 	// 7. Report results
 	
 	$display("#####################################################################################################");	
