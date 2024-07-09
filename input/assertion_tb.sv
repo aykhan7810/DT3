@@ -44,13 +44,17 @@ module assertion_tb;
    logic clr_out;    
    logic tick_out;
    
+   logic req_in;
+   logic play_out;
+   logic cmd_write;
+   
    ///////////////////////////////////////////////////////////////////
    // Test data generation process 
    ///////////////////////////////////////////////////////////////////
 
    initial 
      begin
-
+/*
 	
 	$info("f_cfg_reg_write OK");
 	PSEL = '0;
@@ -124,6 +128,166 @@ module assertion_tb;
 
 	#1us;
 	
+	$info("mf_req_in_pulse PASS");
+	req_in = '0;
+	@(negedge clk);
+	req_in = '1;
+	#1
+	req_in = '0;
+
+	#1us;
+	
+	$info("mf_req_in_pulse FAIL");
+	@(negedge clk);
+	req_in = '1;
+	@(negedge clk);
+	@(negedge clk);
+	req_in = '0;
+
+	#1us; */
+	
+/*  $info("mf_req_in_first PASS");
+    play_out = 0;
+    req_in = 0;
+    @(negedge clk);
+    play_out = 1;
+    @(negedge clk);
+    play_out = 0;
+    req_in = 0;  
+    @(negedge clk);
+    req_in = 0; 
+
+    #1us;
+
+    $info("mf_req_in_first FAIL1");
+    @(negedge clk);
+    play_out = 1;
+    @(negedge clk);
+    play_out = 0;
+    req_in = 0; 
+    @(negedge clk);
+    req_in = 1;  
+
+    #1us;
+
+    $info("mf_req_in_first FAIL2");
+    @(negedge clk);
+    play_out = 1;
+    @(negedge clk);
+    play_out = 0;
+    req_in = 1;  
+    @(negedge clk);
+    req_in = 0; 
+
+    #1us;     
+    
+    $info("f_prdata_off PASS");
+    @(negedge clk);
+    PSEL = 1'b1;
+    PRDATA = $urandom;
+    @(negedge clk);
+    PSEL = 1'b0;
+    @(negedge clk);
+    PRDATA = 32'b0;
+
+    #100ns;
+
+    $info("f_prdata_off FAIL");
+    @(negedge clk);
+    PSEL = 1'b1;
+    PRDATA = $urandom;
+    @(negedge clk);
+    PSEL = 1'b0;
+    @(negedge clk);
+    PRDATA = $urandom;
+
+    #1us; 
+    
+    $info("f_pslverr_off PASS");
+    @(negedge clk);
+    PSLVERR = 1'b0;
+
+    #1us;
+
+    $info("f_pslverr_off FAIL");
+    @(negedge clk);
+    PSLVERR = 1'b1;
+    
+    #1us; 
+    
+    $info("f_irq_out_fall PASS");
+  // Write CMD_IRQACK and expect irq_out to be low on next cycle
+  @(negedge clk);
+  irq_out = 1;
+  cmd_write = 1;
+  PWDATA = CMD_IRQACK;
+  @(negedge clk);
+  cmd_write = 0;
+  PWDATA = 0;
+  @(negedge clk);
+  irq_out = 0;
+  
+  #1us;
+  
+  // Write CMD_STOP and expect irq_out to be low on next cycle
+  @(negedge clk);
+  irq_out = 1;
+  cmd_write = 1;
+  PWDATA = CMD_STOP;
+  @(negedge clk);
+  cmd_write = 0;
+  PWDATA = 0;
+  @(negedge clk);
+  irq_out = 0;
+	
+	#1us;
+	
+  $info("f_irq_out_fall FAIL");
+  // Write CMD_IRQACK but irq_out does not go low
+  @(negedge clk);
+  irq_out = 1;
+  cmd_write = 1;
+  PWDATA = CMD_IRQACK;
+  @(negedge clk);
+  cmd_write = 0;
+  PWDATA = 0;
+  @(negedge clk);
+  irq_out = 1; // Should be 0 to pass, but kept 1 to fail
+	
+	#1us;
+	
+  // Write CMD_STOP but irq_out does not go low
+  @(negedge clk);
+  irq_out = 1;
+  cmd_write = 1;
+  PWDATA = CMD_STOP;
+  @(negedge clk);
+  cmd_write = 0;
+  PWDATA = 0;
+  @(negedge clk);
+  irq_out = 1;   
+  
+  	$info("f_irq_out_standby PASS");
+	play_out = '1;
+	irq_out = '1;
+	@(negedge clk);
+	play_out = '0;
+	@(negedge clk);
+	irq_out = '0;
+	
+	#1us;
+	
+	$info("f_irq_out_standby FAIL");
+  	play_out = 1;
+  	irq_out = 1;
+  	@(negedge clk);
+  	play_out = 0;
+  	@(negedge clk);
+  	irq_out = 1;
+    
+    #1us; */
+    		
+	
 	$finish;
 	
      end 
@@ -136,7 +300,7 @@ module assertion_tb;
    // ---------------------------------------------------------------------------      
    // f_cfg_reg_write
    // ---------------------------------------------------------------------------
-
+/*
    property f_cfg_reg_write;
       @(posedge clk) disable iff (rst_n == '0)
         PSEL && PENABLE && PREADY && PWRITE && (PADDR == CFG_REG_ADDRESS) |=> cfg_reg_out == $past(PWDATA);
@@ -144,6 +308,17 @@ module assertion_tb;
       
    af_cfg_reg_write: assert property(f_cfg_reg_write)
      else assert_error("f_cfg_reg_out");
-   cf_cfg_reg_write: cover property(f_cfg_reg_write);
-      
-endmodule 
+   cf_cfg_reg_write: cover property(f_cfg_reg_write); */
+   
+   property f_irq_out_standby;
+      @(posedge clk ) disable iff (rst_n == '0)
+	(!play_out) |-> (!irq_out);
+   endproperty
+
+   af_irq_out_standby: assert property(f_irq_out_standby) else assert_error("af_irq_out_standby");
+   cf_irq_out_standby: cover property(f_irq_out_standby);
+   
+   	
+endmodule
+   	
+

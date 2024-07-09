@@ -108,12 +108,31 @@ module control_unit_svamod
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
  `include "apb_assumes.svh"
+ 
+ 	logic cmd_exe;
+ 	logic write_access;
+ 	
+ 	always @(PSEL, PENABLE, PREADY, PWRITE)
+     begin
+	if (PSEL && PENABLE && PREADY && PWRITE)
+	  write_access = '1;
+	else
+	  write_access = '0;
+     end
+	    
+   always @(write_access, PADDR)
+     begin
+	if ( write_access && (PADDR == CMD_REG_ADDRESS))
+	  cmd_exe = '1;
+	else
+	  cmd_exe = '0;
+     end
 
    // req_in_pulse : f_req_in_pulse
 
    property f_req_in_pulse;
       @(posedge clk ) disable iff (rst_n == '0)
-	1;
+	(req_in) |=> (!req_in);
    endproperty
 
    mf_req_in_pulse: assume property(f_req_in_pulse) else assert_error("mf_req_in_pulse");
@@ -123,10 +142,11 @@ module control_unit_svamod
 
    property f_req_in_first;
       @(posedge clk ) disable iff (rst_n == '0)
-	1;
+	(play_out == 1'b1) |=> (!req_in) [*2];
    endproperty
 
-   mf_req_in_first: assume property(f_req_in_first) else assert_error("mf_req_in_first");
+   mf_req_in_first: assume property(f_req_in_first) 
+   else assert_error("mf_req_in_first");
 
 
    // cmd_wait_states : f_cmd_wait_states
@@ -153,7 +173,7 @@ module control_unit_svamod
 
    property f_prdata_off;
       @(posedge clk ) disable iff (rst_n == '0)
-	1;
+	(PSEL == '0) |-> (PRDATA == '0);
    endproperty
 
    af_prdata_off: assert property(f_prdata_off) else assert_error("af_prdata_off");
@@ -163,7 +183,7 @@ module control_unit_svamod
 
    property f_pslverr_off;
       @(posedge clk ) disable iff (rst_n == '0)
-	1;
+	PSLVERR == '0;
    endproperty
 
    af_pslverr_off: assert property(f_pslverr_off) else assert_error("af_pslverr_off");
@@ -213,7 +233,7 @@ module control_unit_svamod
 
    property f_start_play_out;
       @(posedge clk ) disable iff (rst_n == '0)
-	1;
+	(cmd_exe && PWDATA == CMD_START) |=> (play_out);
    endproperty
 
    af_start_play_out: assert property(f_start_play_out) else assert_error("af_start_play_out");
@@ -233,7 +253,7 @@ module control_unit_svamod
 
    property f_stop_play_out;
       @(posedge clk ) disable iff (rst_n == '0)
-	1;
+	(cmd_exe && (PWDATA == CMD_STOP)) |=> (play_out == '0);
    endproperty
 
    af_stop_play_out: assert property(f_stop_play_out) else assert_error("af_stop_play_out");
@@ -253,7 +273,7 @@ module control_unit_svamod
 
    property f_level_out_rise;
       @(posedge clk ) disable iff (rst_n == '0)
-	1;
+	(cmd_exe && (PWDATA == CMD_LEVEL)) |-> $rose(level_out);
    endproperty
 
    af_level_out_rise: assert property(f_level_out_rise) else assert_error("af_level_out_rise");
@@ -263,7 +283,7 @@ module control_unit_svamod
 
    property f_level_out_valid_high;
       @(posedge clk ) disable iff (rst_n == '0)
-	1;
+	(level_out == 1'b1) |-> (cmd_exe && (PWDATA == CMD_LEVEL));
    endproperty
 
    af_level_out_valid_high: assert property(f_level_out_valid_high) else assert_error("af_level_out_valid_high");
@@ -273,7 +293,7 @@ module control_unit_svamod
 
    property f_tick_standby;
       @(posedge clk ) disable iff (rst_n == '0)
-	1;
+	(!play_out) |-> (!tick_out);
    endproperty
 
    af_tick_standby: assert property(f_tick_standby) else assert_error("af_tick_standby");
@@ -283,7 +303,7 @@ module control_unit_svamod
 
    property f_tick_out_high;
       @(posedge clk ) disable iff (rst_n == '0)
-	1;
+	(play_out && req_in && play_out) |=> (tick_out);
    endproperty
 
    af_tick_out_high: assert property(f_tick_out_high) else assert_error("af_tick_out_high");
@@ -293,7 +313,7 @@ module control_unit_svamod
 
    property f_tick_out_low;
       @(posedge clk ) disable iff (rst_n == '0)
-	1;
+	(play_out == '0 || !req_in || !play_out) |-> (tick_out == '0);
    endproperty
 
    af_tick_out_low: assert property(f_tick_out_low) else assert_error("af_tick_out_low");
@@ -313,7 +333,7 @@ module control_unit_svamod
 
    property f_irq_out_standby;
       @(posedge clk ) disable iff (rst_n == '0)
-	1;
+	(!play_out) |-> (!irq_out);
    endproperty
 
    af_irq_out_standby: assert property(f_irq_out_standby) else assert_error("af_irq_out_standby");
@@ -343,7 +363,7 @@ module control_unit_svamod
 
    property f_irq_out_fall;
       @(posedge clk ) disable iff (rst_n == '0)
-	1;
+	(cmd_exe && (PWDATA == CMD_IRQACK || PWDATA == CMD_STOP)) |=> (irq_out == '0);
    endproperty
 
    af_irq_out_fall: assert property(f_irq_out_fall) else assert_error("af_irq_out_fall");
