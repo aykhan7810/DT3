@@ -109,27 +109,8 @@ module control_unit_svamod
 
  `include "apb_assumes.svh"
  
- 	logic cmd_exe;
- 	logic write_access;
- 	
- 	always @(PSEL, PENABLE, PREADY, PWRITE)
-     begin
-	if (PSEL && PENABLE && PREADY && PWRITE)
-	  write_access = '1;
-	else
-	  write_access = '0;
-     end
-	    
-   always @(write_access, PADDR)
-     begin
-	if ( write_access && (PADDR == CMD_REG_ADDRESS))
-	  cmd_exe = '1;
-	else
-	  cmd_exe = '0;
-     end
-
    // req_in_pulse : f_req_in_pulse
-
+   
    property f_req_in_pulse;
       @(posedge clk ) disable iff (rst_n == '0)
 	(req_in) |=> (!req_in);
@@ -233,7 +214,7 @@ module control_unit_svamod
 
    property f_start_play_out;
       @(posedge clk ) disable iff (rst_n == '0)
-	(cmd_exe && PWDATA == CMD_START) |=> (play_out);
+	(PSEL && !PENABLE && PWRITE && (PWDATA == CMD_START)) |=> (play_out);
    endproperty
 
    af_start_play_out: assert property(f_start_play_out) else assert_error("af_start_play_out");
@@ -253,7 +234,7 @@ module control_unit_svamod
 
    property f_stop_play_out;
       @(posedge clk ) disable iff (rst_n == '0)
-	(cmd_exe && (PWDATA == CMD_STOP)) |=> (play_out == '0);
+	(PSEL && !PENABLE && PWRITE && (PWDATA == CMD_STOP)) |=> (play_out == '0);
    endproperty
 
    af_stop_play_out: assert property(f_stop_play_out) else assert_error("af_stop_play_out");
@@ -283,7 +264,7 @@ module control_unit_svamod
 
    property f_level_out_valid_high;
       @(posedge clk ) disable iff (rst_n == '0)
-	(level_out == 1'b1) |-> (cmd_exe && (PWDATA == CMD_LEVEL));
+	(level_out == 1'b1) |-> (PSEL && PENABLE && PWRITE && PREADY && (PWDATA == CMD_LEVEL));
    endproperty
 
    af_level_out_valid_high: assert property(f_level_out_valid_high) else assert_error("af_level_out_valid_high");
@@ -363,7 +344,7 @@ module control_unit_svamod
 
    property f_irq_out_fall;
       @(posedge clk ) disable iff (rst_n == '0)
-	(cmd_exe && (PWDATA == CMD_IRQACK || PWDATA == CMD_STOP)) |=> (irq_out == '0);
+	(PSEL && !PENABLE && PWRITE && (PWDATA == CMD_IRQACK || PWDATA == CMD_STOP)) |=> (irq_out == '0);
    endproperty
 
    af_irq_out_fall: assert property(f_irq_out_fall) else assert_error("af_irq_out_fall");
