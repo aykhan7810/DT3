@@ -32,7 +32,7 @@ set SDC_FILE input/${DESIGN_NAME}.sdc
 
 set CLOCK_NAME "clk"
 set CLOCK_NAMES           {"clk"}
-set CLOCK_PERIODS         {  20 }
+set CLOCK_PERIODS         {  54.25347222 }
 set CLOCK_UNCERTAINTIES   {   0 }
 set CLOCK_LATENCIES       {   0 }
 set INPUT_DELAYS          {   0 }

@@ -4,7 +4,7 @@
 
 # 1. Define clock period and clock edge times in ns
 
-create_clock -name clk -period 10.0 clk
+create_clock -name clk -period 54.25347222 clk
 set_ideal_network clk
 
 # 2. Define reset input timing wrt clock in ns

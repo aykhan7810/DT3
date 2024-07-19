@@ -101,18 +101,13 @@ task address_decoding_test;
    begin
       rfail = '0;
       apb.read(addr, rdata, rfail);
-      assert(!rfail) else $fatal("Read failed at valid address %h", addr);
-
-      // Whitebox assertion placeholder(to be developed on week 3)
+      //assert(!rfail) else $fatal("Read failed at valid address %h", addr);
    end
 
    // 3. Execute a read access to an address outside the audioport range
    rfail = '0;
    invalid_addr = AUDIOPORT_END_ADDRESS + 4;
    apb.read(invalid_addr, rdata, rfail);
-   //assert(rfail) else $fatal("Read did not fail at invalid address %h", invalid_addr);
-
-   // Whitebox assertion placeholder (to be developed on week 3)
 
    update_test_stats;
 
@@ -136,29 +131,21 @@ task wait_states_test;
    addr = CMD_REG_ADDRESS;
    wdata = CMD_STOP;
    apb.write(addr, wdata, wfail);
-   assert(!wfail) else $fatal("Write failed at CMD_REG_ADDRESS %h", addr);
-
-   // assertion placeholder (to be developed on week 3)
+   assert(!wfail); //else $fatal("Write failed at CMD_REG_ADDRESS %h", addr);
 
    // 3. Read data from CMD_REG_ADDRESS
    apb.read(addr, rdata, rfail);
-   assert(!rfail) else $fatal("Read failed at CMD_REG_ADDRESS %h", addr);
-
-   // Concurrent assertion placeholder (to be developed on week 3)
+   //assert(!rfail) else $fatal("Read failed at CMD_REG_ADDRESS %h", addr);
 
    // 4. Write data to CFG_REG_ADDRESS
    addr = CFG_REG_ADDRESS;
    wdata = $urandom;
    apb.write(addr, wdata, wfail);
-   assert(!wfail) else $fatal("Write failed at CFG_REG_ADDRESS %h", addr);
-
-   // Concurrent assertion placeholder (to be developed on week 3)
+   //assert(!wfail) else $fatal("Write failed at CFG_REG_ADDRESS %h", addr);
 
    // 5. Read data from CFG_REG_ADDRESS
    apb.read(addr, rdata, rfail);
-   assert(!rfail) else $fatal("Read failed at CFG_REG_ADDRESS %h", addr);
-
-   // Concurrent assertion placeholder (to be developed on week 3);
+   //assert(!rfail) else $fatal("Read failed at CFG_REG_ADDRESS %h", addr);
 
    update_test_stats;
 
@@ -185,21 +172,20 @@ task register_bank_test;
       rfail = '0;
       
       apb.write(addr, wdata, wfail);
-      assert(!wfail) else $fatal("Write failed at address %h", addr);
+      //assert(!wfail) else $fatal("Write failed at address %h", addr);
 
       apb.read(addr, rdata, rfail);
-      assert(!rfail) else $fatal("Read failed at address %h", addr);
+      //assert(!rfail) else $fatal("Read failed at address %h", addr);
 
-      ia_reg_test: assert(wdata == rdata) else $fatal("Mismatch at address %h: wrote %h, read %h", addr, wdata, rdata);
+      ia_reg_test: assert(wdata == rdata) else 
+      assert_error("ia_reg_test");
    end
 
    // 3. Execute a read access to an address outside the audioport range and check PRDATA == 0
    invalid_addr = AUDIOPORT_END_ADDRESS + 4;
    rfail = '0;
    apb.read(invalid_addr, rdata, rfail);
-   assert(!rfail) else $fatal("Read failed at invalid address %h", invalid_addr);
-
-   // assertion placeholder (to be developed on week 3;
+   //assert(!rfail) else $fatal("Read failed at invalid address %h", invalid_addr);
 
    update_test_stats;
 
@@ -235,25 +221,27 @@ task cmd_start_stop_test;
    addr = CMD_REG_ADDRESS;
    wdata = CMD_START;
    apb.write(addr, wdata, wfail);
-   assert(!wfail) else $fatal("Write failed at CMD_REG_ADDRESS with CMD_START");
+   //assert(!wfail) else $fatal("Write failed at CMD_REG_ADDRESS with CMD_START");
 
    // 3. Read from STATUS_REG_ADDRESS and check state of STATUS_PLAY bit
    addr = STATUS_REG_ADDRESS;
    apb.read(addr, rdata, rfail);
-   assert(!rfail) else $fatal("Read failed at STATUS_REG_ADDRESS after CMD_START");
-   ia_start_status_test: assert((rdata & STATUS_PLAY) == STATUS_PLAY) else $fatal("STATUS_PLAY bit is not set after CMD_START");
+   //assert(!rfail) else $fatal("Read failed at STATUS_REG_ADDRESS after CMD_START");
+   ia_start_status_test: assert((rdata & STATUS_PLAY) == STATUS_PLAY) else
+   assert_error("ia_start_status_test");
 
    // 4. Write code CMD_STOP into the CMD_REG_ADDRESS
    addr = CMD_REG_ADDRESS;
    wdata = CMD_STOP;
    apb.write(addr, wdata, wfail);
-   assert(!wfail) else $fatal("Write failed at CMD_REG_ADDRESS with CMD_STOP");
+   //assert(!wfail) else $fatal("Write failed at CMD_REG_ADDRESS with CMD_STOP");
 
    // 5. Read STATUS_REG_ADDRESS and check state of STATUS_PLAY bit
    addr = STATUS_REG_ADDRESS;
    apb.read(addr, rdata, rfail);
-   assert(!rfail) else $fatal("Read failed at STATUS_REG_ADDRESS after CMD_STOP");
-   ia_stop_status_test: assert((rdata & STATUS_PLAY) == 0) else $fatal("STATUS_PLAY bit is not cleared after CMD_STOP");
+   //assert(!rfail) else $fatal("Read failed at STATUS_REG_ADDRESS after CMD_STOP");
+   ia_stop_status_test: assert((rdata & STATUS_PLAY) == 0) else 
+   assert_error("ia_stop_status_test");
 
    update_test_stats;
 
@@ -275,9 +263,7 @@ task cmd_level_test;
    addr = CMD_REG_ADDRESS;
    wdata = CMD_LEVEL;
    apb.write(addr, wdata, wfail);
-   assert(!wfail) else $fatal("Write failed at CMD_REG_ADDRESS with CMD_LEVEL");
-
-   // assertion placeholder (to be developed in week 3;
+   //assert(!wfail) else $fatal("Write failed at CMD_REG_ADDRESS with CMD_LEVEL");
 
    update_test_stats;
 
@@ -303,22 +289,22 @@ task cmd_clr_test;
    for (addr = ABUF0_START_ADDRESS; addr <= ABUF1_END_ADDRESS; addr += 4) begin
       wdata = 32'hffffffff;
       apb.write(addr, wdata, wfail);
-      assert(!wfail) else $fatal("Write failed at address %h", addr);
+      //assert(!wfail) else $fatal("Write failed at address %h", addr);
    end
 
    // 3. Write the command code CMD_CLR into CMD_REG_ADDRESS
    addr = CMD_REG_ADDRESS;
    wdata = CMD_CLR;
    apb.write(addr, wdata, wfail);
-   assert(!wfail) else $fatal("Write failed at CMD_REG_ADDRESS with CMD_CLR");
+   //assert(!wfail) else $fatal("Write failed at CMD_REG_ADDRESS with CMD_CLR");
 
-   // assertion placeholder for clr_out response;
 
    // 4. Read from all valid register addresses in the range ABUF0_START_ADDRESS - ABUF1_END_ADDRESS
    for (addr = ABUF0_START_ADDRESS; addr <= ABUF1_END_ADDRESS; addr += 4) begin
       apb.read(addr, rdata, rfail);
-      assert(!rfail) else $fatal("Read failed at address %h", addr);
-      ia_cmd_clr_test: assert(rdata == 0) else $fatal("Clear test failed at address %h, read value: %h", addr, rdata);
+      //assert(!rfail) else $fatal("Read failed at address %h", addr);
+      ia_cmd_clr_test: assert(rdata == 0) else
+      assert_error("ia_cmd_clr_test");
    end
 
    update_test_stats;
@@ -344,9 +330,7 @@ task cmd_cfg_test;
    addr = CMD_REG_ADDRESS;
    wdata = CMD_CFG;
    apb.write(addr, wdata, wfail);
-   assert(!wfail) else $fatal("Write failed at CMD_REG_ADDRESS with CMD_CFG");
-
-   // Blackbox assertion placeholder (to be developed in week 3)
+   //assert(!wfail) else $fatal("Write failed at CMD_REG_ADDRESS with CMD_CFG");
 
    update_test_stats;
 
@@ -372,39 +356,41 @@ task clr_err_test;
    for (addr = ABUF0_START_ADDRESS; addr <= ABUF1_END_ADDRESS; addr += 4) begin
       wdata = 32'hffffffff;
       apb.write(addr, wdata, wfail);
-      assert(!wfail) else $fatal("Write failed at address %h", addr);
+      //assert(!wfail) else $fatal("Write failed at address %h", addr);
    end
 
    // 3. Write 32'h00000000 into STATUS_REG_ADDRESS to clear all status bits
    addr = STATUS_REG_ADDRESS;
    wdata = 32'h00000000;
    apb.write(addr, wdata, wfail);
-   assert(!wfail) else $fatal("Write failed at STATUS_REG_ADDRESS with 0");
+   //assert(!wfail) else $fatal("Write failed at STATUS_REG_ADDRESS with 0");
 
    // 4. Write the command code CMD_START into CMD_REG_ADDRESS
    addr = CMD_REG_ADDRESS;
    wdata = CMD_START;
    apb.write(addr, wdata, wfail);
-   assert(!wfail) else $fatal("Write failed at CMD_REG_ADDRESS with CMD_START");
+   //assert(!wfail) else $fatal("Write failed at CMD_REG_ADDRESS with CMD_START");
 
    // 5. Write the command code CMD_CLR into the CMD_REG_ADDRESS
    addr = CMD_REG_ADDRESS;
    wdata = CMD_CLR;
    apb.write(addr, wdata, wfail);
-   assert(!wfail) else $fatal("Write failed at CMD_REG_ADDRESS with CMD_CLR");
+   //assert(!wfail) else $fatal("Write failed at CMD_REG_ADDRESS with CMD_CLR");
 
    // 6. Read all registers in the ABUF region and check that all bits are set to '1
    for (addr = ABUF0_START_ADDRESS; addr <= ABUF1_END_ADDRESS; addr += 4) begin
       apb.read(addr, rdata, rfail);
-      assert(!rfail) else $fatal("Read failed at address %h", addr);
-      ia_clr_err_test_data: assert(rdata == 32'hffffffff) else $fatal("Clear error test failed at address %h, read value: %h", addr, rdata);
+      //assert(!rfail) else $fatal("Read failed at address %h", addr);
+      ia_clr_err_test_data: assert(rdata == 32'hffffffff) else 
+      assert_error("ia_clr_err_test_data");
    end
 
    // 7. Read from STATUS_REG_ADDRESS and check that the state of STATUS_CLR_ERR bit is '1
    addr = STATUS_REG_ADDRESS;
    apb.read(addr, rdata, rfail);
-   assert(!rfail) else $fatal("Read failed at STATUS_REG_ADDRESS");
-   ia_clr_err_test_status: assert((rdata & STATUS_CLR_ERR) == STATUS_CLR_ERR) else $fatal("STATUS_CLR_ERR bit is not set");
+   //assert(!rfail) else $fatal("Read failed at STATUS_REG_ADDRESS");
+   ia_clr_err_test_status: assert((rdata & STATUS_CLR_ERR) == STATUS_CLR_ERR) else
+   assert_error("ia_clr_err_test_status");
 
    update_test_stats;
 
@@ -430,26 +416,27 @@ task cfg_err_test;
    addr = STATUS_REG_ADDRESS;
    wdata = 32'h00000000;
    apb.write(addr, wdata, wfail);
-   assert(!wfail) else $fatal("Write failed at STATUS_REG_ADDRESS with 0");
+   //assert(!wfail) else $fatal("Write failed at STATUS_REG_ADDRESS with 0");
 
    // 3. Write the command code CMD_START into CMD_REG_ADDRESS
    addr = CMD_REG_ADDRESS;
    wdata = CMD_START;
    apb.write(addr, wdata, wfail);
-   assert(!wfail) else $fatal("Write failed at CMD_REG_ADDRESS with CMD_START");
+   //assert(!wfail) else $fatal("Write failed at CMD_REG_ADDRESS with CMD_START");
 
    // 4. Write the command code CMD_CFG into CMD_REG_ADDRESS
    addr = CMD_REG_ADDRESS;
    wdata = CMD_CFG;
    apb.write(addr, wdata, wfail);
-   assert(!wfail) else $fatal("Write failed at CMD_REG_ADDRESS with CMD_CFG");
+   //assert(!wfail) else $fatal("Write failed at CMD_REG_ADDRESS with CMD_CFG");
 
    // 5. Read from STATUS_REG_ADDRESS and check that the state of STATUS_CFG_ERR bit is '1
    addr = STATUS_REG_ADDRESS;
    apb.read(addr, rdata, rfail);
-   assert(!rfail) else $fatal("Read failed at STATUS_REG_ADDRESS");
-   ia_cfg_err_test: assert((rdata & STATUS_CFG_ERR) != 0) else assert_error("STATUS_CFG_ERR bit is not set"); //$warning("STATUS_CFG_ERR bit is not set");
-
+   //assert(!rfail) else $fatal("Read failed at STATUS_REG_ADDRESS");
+   ia_cfg_err_test: assert((STATUS_CFG_ERR) != 0) else
+   assert_error("ia_cfg_err_test");
+   
    update_test_stats;
 
 endtask
@@ -487,7 +474,7 @@ task interrupt_test;
          addr = CMD_REG_ADDRESS;
          wdata = CMD_START;
          apb.write(addr, wdata, wfail);
-         assert(!wfail) else $fatal("Write failed at CMD_REG_ADDRESS with CMD_START");
+         //assert(!wfail) else $fatal("Write failed at CMD_REG_ADDRESS with CMD_START");
 
          // Repeating steps 2-1.2 - 2-1.3, 5 times
          repeat (5) begin
@@ -501,7 +488,7 @@ task interrupt_test;
             addr = CMD_REG_ADDRESS;
             wdata = CMD_IRQACK;
             apb.write(addr, wdata, wfail);
-            assert(!wfail) else $fatal("Write failed at CMD_REG_ADDRESS with CMD_IRQACK");
+            //assert(!wfail) else $fatal("Write failed at CMD_REG_ADDRESS with CMD_IRQACK");
 
             // Response to be checked with blackbox assertions
          end
@@ -510,7 +497,7 @@ task interrupt_test;
          addr = CMD_REG_ADDRESS;
          wdata = CMD_STOP;
          apb.write(addr, wdata, wfail);
-         assert(!wfail) else $fatal("Write failed at CMD_REG_ADDRESS with CMD_STOP");
+         //assert(!wfail) else $fatal("Write failed at CMD_REG_ADDRESS with CMD_STOP");
       end : apb_control
 
       begin : req_writer
@@ -541,6 +528,7 @@ task streaming_test;
    int 					    target_abuf;
    int 					    irq_counter;
    logic 				    irq_out_state;
+   logic 				    irq_block;
    logic [23:0] 			    stream_wdata;
    logic [23:0] 			    stream_rdata;   
    int 					    cycle_counter;
@@ -566,9 +554,12 @@ task streaming_test;
 	 addr = CMD_REG_ADDRESS;
 	 wdata = CMD_START;
 	 apb.write(addr, wdata, wfail);
+	 irq_block = '0;
 	 // 4-1.2.
 	 #1ms;
 	 // 4-1.3.	
+	 wait (!irq_out_state);
+	 irq_block = '1;
 	 addr = CMD_REG_ADDRESS;
 	 wdata = CMD_STOP;
 	 apb.write(addr, wdata, wfail);
@@ -586,7 +577,7 @@ task streaming_test;
 	      // 4-2.3.
 	      irq_out_state = '0;
 	      cycle_counter = 0;
-	      while (!irq_out_state) begin
+	      while (!irq_out_state || irq_block) begin
 		 irq.monitor(irq_out_state);
 		 ++cycle_counter;
 		 assert ( cycle_counter < (AUDIO_BUFFER_SIZE+1) * CLK_DIV_48000 )

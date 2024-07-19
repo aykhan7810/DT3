@@ -44,7 +44,7 @@ module control_unit
    logic 				 req_r;
    logic [$clog2(ABUF_REGISTERS)-1:0] rctr_r;
    logic 				 irq_r;
-   
+ 
    assign PSLVERR = 0;
    
    always_comb
@@ -76,7 +76,7 @@ module control_unit
         	wctr_r <= 0;
       		end
     	end 
-    	else if (wctr_r < CMD_WAIT_STATES) begin
+    	else if (wctr_r < CMD_WAIT_STATES && PSEL && PENABLE && PWRITE && PADDR == CMD_REG_ADDRESS) begin
       	wctr_r <= wctr_r + 1;
     	end 
     	else if (wctr_r == CMD_WAIT_STATES) begin
@@ -100,8 +100,8 @@ module control_unit
       rbank_r <= '0;
     end else begin
       // register_bank
-      if (PSEL && PENABLE && PWRITE && (wctr_r == 0)) begin
-        rbank_r[rindex] <= PWDATA;
+      if (PSEL && PENABLE && PWRITE && PREADY && (wctr_r == '0)) begin
+        rbank_r[(rindex)] <= (PWDATA);
       end
       
       // cmd_clr
@@ -121,12 +121,15 @@ module control_unit
       if (cfg_err) begin	//cfg_err
         rbank_r[STATUS_REG_INDEX][STATUS_CFG_ERR] <= '1;
       end
-      if (irq_err && (PADDR != STATUS_REG_ADDRESS)) begin	//irq_err && status_reg_write
+      if (irq_err && !(PSEL && PENABLE && PWRITE && (wctr_r == 0)) && (PADDR != STATUS_REG_ADDRESS)) begin	//irq_err && status_reg_write
         rbank_r[STATUS_REG_INDEX][STATUS_IRQ_ERR] <= '1;
       end
       if (cmd_err) begin	//cmd_err
         rbank_r[STATUS_REG_INDEX][STATUS_CMD_ERR] <= '1;
       end   
+      if (!((wctr_r == 0) && PSEL && PENABLE && PWRITE && (rindex == STATUS_REG_INDEX)) && !start && !stop && !clr_err && !cfg_err && !irq_err && !cmd_err) begin
+       rbank_r[STATUS_REG_INDEX] = rbank_r[STATUS_REG_INDEX];
+      end
     end
   end : rbank_r_reg
   
@@ -157,6 +160,7 @@ module control_unit
   begin: cmd_err_logic
   	if (cmd_exe) begin
     case (PWDATA)
+      CMD_NOP,
       CMD_START,
       CMD_STOP,
       CMD_CLR,
@@ -211,11 +215,12 @@ module control_unit
     if (!rst_n) begin
       play_r <= 1'b0;
     end else begin
-      if (start) begin
-        play_r <= 1'b1;
-      end else if (stop) begin
-        play_r <= 1'b0;
-      end
+      play_r <= start ? 1'b1 : (stop ? 1'b0 : play_r);
+      //if (start) begin
+        //play_r <= 1'b1;
+      //end else if (stop) begin
+        //play_r <= 1'b0;
+      //end
     end
   end : play_r_reg
   
@@ -223,7 +228,7 @@ module control_unit
   
   always_comb
   begin : clr_logic
-  	if (!play_r && cmd_exe && PWDATA == CMD_CLR) begin
+  	if (play_r == '0 && cmd_exe && PWDATA == CMD_CLR) begin
   		clr = '1;
   	end else begin
   		clr = '0;
@@ -243,7 +248,7 @@ module control_unit
   
   always_comb
   begin : cfg_out_logic
-  	if (!play_r && cmd_exe && PWDATA == CMD_CFG) begin
+  	if (play_r == '0 && cmd_exe && PWDATA == CMD_CFG) begin
   		cfg_out = '1;
   	end else begin
   		cfg_out = '0;
@@ -262,7 +267,7 @@ module control_unit
   always_ff @(posedge clk or negedge rst_n) 
   begin : req_r_reg
     if (!rst_n) begin
-      req_r <= 1'b0;
+      req_r <= '0;
     end else begin
       if (play_r) begin
         req_r <= req_in;
@@ -274,14 +279,11 @@ module control_unit
   
   always_comb
   begin : tick_out_logic
-  	if (!play_r) 
-  	begin : abuf_standby
-  		tick_out = '1;
-  	end : abuf_standby 
-  	else 
-  	begin : abuf_tick
+  	if (play_r == '0) begin
   		tick_out = '0;
-  	end : abuf_tick  	
+  	end else if (play_r == '1) begin
+  		tick_out = req_r;
+  	end  	
   end : tick_out_logic
   
   always_ff @(posedge clk or negedge rst_n) 
@@ -289,14 +291,18 @@ module control_unit
     if (!rst_n)
       rctr_r <= '0;
     else begin
-      if (play_r == 1'b0) begin
+      if (play_r == '0) begin
         rctr_r <= '0;
-      end else if (stop == 1'b1) begin
+      end else if (stop == '1) begin
         rctr_r <= '0;
-      	end else if (play_r == 1'b1 && stop == 1'b0 && req_r == 1'b1) begin
-        	if (rctr_r < ABUF_REGISTERS - 2) begin
+      	end else if (play_r == '1 && stop == '0 && req_r == '1) begin
+        	if (rctr_r < (ABUF_REGISTERS - 2)) begin
           	rctr_r <= rctr_r + 2;
-        	end 
+        	end else begin
+        	rctr_r <= '0;
+        	end
+      	end else if (play_r == '1 && stop == '0 && req_r == '0) begin
+      		rctr_r <= rctr_r;
       	end
       end
    end : rctr_r_reg
@@ -306,9 +312,9 @@ module control_unit
     if (!rst_n) begin
       irq_r <= 1'b0;
     end else begin
-      if (play_r == 1'b1 && req_r == 1'b1 && stop == 1'b0 && irqack == 1'b0 && (rctr_r == ABUF0_END_INDEX-1 || rctr_r == ABUF1_END_INDEX-1)) begin
+      if (req_r == '1 && play_r == '1 && stop == '0 && irqack == 1'b0 && ((rctr_r == 2*AUDIO_BUFFER_SIZE-1) || (rctr_r == 4*AUDIO_BUFFER_SIZE-1))) begin
         irq_r <= 1'b1;
-      end else if (stop == 1'b1 || irqack == 1'b1) begin
+      end else if (stop == '1 || irqack == '1) begin
         irq_r <= 1'b0;
       end
     end
@@ -318,7 +324,7 @@ module control_unit
   	
   	always_comb
   	begin : irq_err_logic
-  	if (irq_r && req_r && play_r && !stop && !irqack && (rctr_r == ABUF0_END_INDEX-1 || rctr_r == ABUF1_END_INDEX-1)) begin
+  	if (irq_r && req_r && play_r && stop == '0 && irqack == '0 && (rctr_r == (ABUF0_END_INDEX-1) || rctr_r == (ABUF1_END_INDEX-1))) begin
   		irq_err = '1;
   	end else 
   		irq_err = '0;	
@@ -333,5 +339,5 @@ module control_unit
   	begin : audio1_out_logic
   	audio1_out = rbank_r[rctr_r + ABUF0_START_INDEX + 1][23:0];
   	end: audio1_out_logic
-   
+
 endmodule

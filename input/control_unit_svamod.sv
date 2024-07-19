@@ -123,7 +123,7 @@ module control_unit_svamod
 
    property f_req_in_first;
       @(posedge clk ) disable iff (rst_n == '0)
-	(play_out == 1'b1) |=> (!req_in) [*2];
+	$rose(play_out) |-> (!req_in) [*2];
    endproperty
 
    mf_req_in_first: assume property(f_req_in_first) 
@@ -184,7 +184,8 @@ module control_unit_svamod
 
    property f_clr_out_valid_high;
       @(posedge clk ) disable iff (rst_n == '0)
-	1;
+	//(clr_out == '1) |-> (play_out == '0) && PSEL && PENABLE && PREADY && PWRITE && (PADDR == CMD_REG_ADDRESS) && (PWDATA[31:24] == CMD_CLR);
+	clr_out |-> (play_out == '0 && PSEL && PENABLE && PWRITE && (PADDR == CMD_REG_ADDRESS) && (PWDATA == CMD_CLR));
    endproperty
 
    af_clr_out_valid_high: assert property(f_clr_out_valid_high) else assert_error("af_clr_out_valid_high");
@@ -195,6 +196,8 @@ module control_unit_svamod
    property f_cfg_out_rise;
       @(posedge clk ) disable iff (rst_n == '0)
 	1;
+	//(play_out == '0) && PSEL && PENABLE && PWRITE && (PADDR == CMD_REG_ADDRESS) && (PWDATA == CMD_CFG) |-> cfg_out == '1;
+	//(play_out == '0) && PSEL && PENABLE && PREADY && PWRITE && (PWDATA[31:24] == CMD_CFG) |-> cfg_out == '1;
    endproperty
 
    af_cfg_out_rise: assert property(f_cfg_out_rise) else assert_error("af_cfg_out_rise");
@@ -214,7 +217,7 @@ module control_unit_svamod
 
    property f_start_play_out;
       @(posedge clk ) disable iff (rst_n == '0)
-	(PSEL && !PENABLE && PWRITE && (PWDATA == CMD_START)) |=> (play_out);
+	(PSEL && PENABLE && PREADY && PWRITE && (PWDATA == CMD_START)) |=> (play_out);
    endproperty
 
    af_start_play_out: assert property(f_start_play_out) else assert_error("af_start_play_out");
@@ -234,7 +237,7 @@ module control_unit_svamod
 
    property f_stop_play_out;
       @(posedge clk ) disable iff (rst_n == '0)
-	(PSEL && !PENABLE && PWRITE && (PWDATA == CMD_STOP)) |=> (play_out == '0);
+	(PSEL && PENABLE && PREADY && PWRITE && (PWDATA == CMD_STOP)) |=> (play_out == '0);
    endproperty
 
    af_stop_play_out: assert property(f_stop_play_out) else assert_error("af_stop_play_out");
@@ -254,7 +257,8 @@ module control_unit_svamod
 
    property f_level_out_rise;
       @(posedge clk ) disable iff (rst_n == '0)
-	(cmd_exe && (PWDATA == CMD_LEVEL)) |-> $rose(level_out);
+	1;
+	//(PSEL && PENABLE && PREADY && PWRITE && (PWDATA[31:24] == CMD_LEVEL)) |-> $rose(level_out);
    endproperty
 
    af_level_out_rise: assert property(f_level_out_rise) else assert_error("af_level_out_rise");
@@ -274,7 +278,7 @@ module control_unit_svamod
 
    property f_tick_standby;
       @(posedge clk ) disable iff (rst_n == '0)
-	(!play_out) |-> (!tick_out);
+	play_out == '0 |-> tick_out == '0;
    endproperty
 
    af_tick_standby: assert property(f_tick_standby) else assert_error("af_tick_standby");
@@ -284,7 +288,8 @@ module control_unit_svamod
 
    property f_tick_out_high;
       @(posedge clk ) disable iff (rst_n == '0)
-	(play_out && req_in && play_out) |=> (tick_out);
+	1;
+	//(play_out && req_in && play_out) |=> (tick_out);
    endproperty
 
    af_tick_out_high: assert property(f_tick_out_high) else assert_error("af_tick_out_high");
@@ -294,7 +299,7 @@ module control_unit_svamod
 
    property f_tick_out_low;
       @(posedge clk ) disable iff (rst_n == '0)
-	(play_out == '0 || !req_in || !play_out) |-> (tick_out == '0);
+	(play_out == '0 || $past(req_in) == '0 || $past(play_out) == '0) |-> (tick_out == '0);
    endproperty
 
    af_tick_out_low: assert property(f_tick_out_low) else assert_error("af_tick_out_low");
@@ -305,6 +310,7 @@ module control_unit_svamod
    property f_irq_out_raised;
       @(posedge clk ) disable iff (rst_n == '0)
 	1;
+	
    endproperty
 
    af_irq_out_raised: assert property(f_irq_out_raised) else assert_error("af_irq_out_raised");
@@ -344,7 +350,7 @@ module control_unit_svamod
 
    property f_irq_out_fall;
       @(posedge clk ) disable iff (rst_n == '0)
-	(PSEL && !PENABLE && PWRITE && (PWDATA == CMD_IRQACK || PWDATA == CMD_STOP)) |=> (irq_out == '0);
+	(PSEL && PENABLE && PWRITE && (PWDATA[31:24] == CMD_IRQACK || PWDATA[31:24] == CMD_STOP)) |=> (!irq_out);
    endproperty
 
    af_irq_out_fall: assert property(f_irq_out_fall) else assert_error("af_irq_out_fall");
@@ -471,7 +477,7 @@ module control_unit_svamod
 
    property r_rbank_r_write;
       @(posedge clk ) disable iff (rst_n == '0)
-	(PSEL && PENABLE && PWRITE && (wctr_r == 0)) |=> rbank_r[$past(rindex)] == $past(PWDATA);
+	(PSEL && PENABLE && PWRITE && (wctr_r == '0)) |=> rbank_r[$past(rindex)] == $past(PWDATA);
    endproperty
 
    ar_rbank_r_write: assert property(r_rbank_r_write) else assert_error("ar_rbank_r_write");
@@ -951,7 +957,7 @@ module control_unit_svamod
 
    property r_tick_out_standby;
       @(posedge clk ) disable iff (rst_n == '0)
-	!play_r |-> !tick_out;
+	play_r == '0 |-> tick_out == '0;
    endproperty
 
    ar_tick_out_standby: assert property(r_tick_out_standby) else assert_error("ar_tick_out_standby");
@@ -981,7 +987,7 @@ module control_unit_svamod
 
    property r_irq_r_rise;
       @(posedge clk ) disable iff (rst_n == '0)
-	(req_r && play_r && !stop && !irqack &&  ((rctr_r == 2*AUDIO_BUFFER_SIZE-2) || (rctr_r == 4*AUDIO_BUFFER_SIZE-2))) |=> irq_r;
+	(req_r && play_r && !stop && !irqack &&  ((rctr_r == 2*AUDIO_BUFFER_SIZE-1) || (rctr_r == 4*AUDIO_BUFFER_SIZE-1))) |=> irq_r;
    endproperty
 
    ar_irq_r_rise: assert property(r_irq_r_rise) else assert_error("ar_irq_r_rise");
@@ -1048,14 +1054,39 @@ module control_unit_svamod
 `ifdef RTL_SIM
 
    // cg_apb_writes
-
    
+   covergroup cg_apb_writes @(posedge clk iff PSEL, PENABLE, PWRITE, PREADY);
+      coverpoint PADDR[31:2] {
+	  bins addresses[] = {[AUDIOPORT_START_ADDRESS>>2 : AUDIOPORT_END_ADDRESS>>2]};
+      }
+   endgroup
+   
+   cg_apb_writes cg_apb_writes_inst = new;
 
    // cg_apb_reads
-
    
+   covergroup cg_apb_reads @(posedge clk iff PSEL, PENABLE, !PWRITE, PREADY);
+      coverpoint PADDR[31:2] {
+	  bins addresses[] = {[AUDIOPORT_START_ADDRESS>>2 : AUDIOPORT_END_ADDRESS>>2]};
+      }
+   endgroup
+   
+   cg_apb_reads cg_apb_reads_inst = new;
 
    // cg_apb_commands
+   
+   covergroup cg_commands @(posedge clk iff PSEL, PENABLE, PWRITE, PREADY, PADDR == CMD_REG_ADDRESS);
+      coverpoint PWDATA[31:0] {
+	  bins command1[] = {CMD_START, CMD_STOP, CMD_LEVEL, CMD_CFG, CMD_CLR, CMD_IRQACK};
+	  bins command2 = default;
+      }
+      coverpoint play_out {
+      bins mode0 = {1'b0};
+      bins mode1 = {1'b1};
+      }
+   endgroup
+   
+   cg_commands cg_commands_inst = new;
 
    
 

@@ -4,7 +4,7 @@
 //
 //    Contents:
 //    1. X-Checks
-//    2. Assumptions fro formal verification
+//    2. Assumptions for formal verification
 //    3. Blackbox assertions
 //    4. Whitebox assertions
 //    5. Covergroups
@@ -31,7 +31,11 @@ module i2s_unit_svamod
    input logic 	      ws_out,
    input logic 	      sdo_out
 `ifndef SYSTEMC_DUT
-
+	input logic	[1:0] cfg_r;
+	input logic play_r;
+	input logic req_r;
+	input logic [47:0] audio_r;
+	input logic [47:0] shift_r;
 
 `endif   
    );
@@ -180,6 +184,98 @@ module i2s_unit_svamod
    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 `ifndef SYSTEMC_DUT
+
+	// cfg_r_stable : ar_cfg_r_stable
+
+	property r_cfg_r_stability;
+    	@(posedge clk) disable iff (rst_n == '0)
+    (play_r | !cfg_in) |-> $stable(cfg_r);
+	endproperty
+
+	ar_cfg_r_stable: assert property(r_cfg_r_stable) else assert_error("ar_cfg_r_stable");
+	cf_cfg_r_stable: cover property(r_cfg_r_stable);
+
+   
+    // mode_control : ar_output_standby_mode
+
+	property r_output_standby_mode;
+    	@(posedge clk) disable iff (rst_n == '0)
+   	(!play_in) |-> (sck_out == '0 && ws_out == '0 && sdo_out == '0);
+   	endproperty
+
+	ar_output_standby_mode: assert property(r_output_standby_mode) else assert_error("ar_output_standby_mode");
+	cf_output_standby_mode: cover property(r_output_standby_mode);
+	
+	// config_interface : ar_config_register_update
+	
+	property r_config_register_update;
+    	@(posedge clk) disable iff (rst_n == '0)
+   	(!play_in && cfg_in) |-> (cfg_r == cfg_reg_in[1:0]);
+   	endproperty
+
+	ar_config_register_update: assert property(r_config_register_update) else assert_error("ar_output_standby_mode");
+	cf_config_register_update: cover property(r_config_register_update);
+	
+	// audio_interface : ar_audio_reg_behavior
+	
+	property r_audio_reg_behavior;
+    	@(posedge clk) disable iff (rst_n == '0)
+   	(play_in && tick_in) |-> (audio_r == {audio0_in, audio1_in});
+   	endproperty
+
+	ar_audio_reg_behavior: assert property(r_audio_reg_behavior) else assert_error("ar_audio_reg_behavior");
+	cf_audio_reg_behavior: cover property(r_audio_reg_behavior);
+	
+	// audio_interface : ar_audio_reg_standby
+	
+	property r_audio_reg_standby;
+    	@(posedge clk) disable iff (rst_n == '0)
+   	(!play_in) |-> (!audio_r);
+   	endproperty
+
+	ar_audio_reg_standby: assert property(r_audio_reg_standby) else assert_error("ar_audio_reg_standby");
+	cf_audio_reg_standby: cover property(r_audio_reg_standby);
+	
+	// data_request : ar_req_out_timing
+	
+	property r_req_out_timing;
+    	@(posedge clk) disable iff (rst_n == '0)
+   	(!sck_out) |-> (req_out);
+   	endproperty
+
+	ar_req_out_timing: assert property(r_req_out_timing) else assert_error("ar_req_out_timing");
+	cf_req_out_timing: cover property(r_req_out_timing);
+	
+	
+	// shift_register : ar_shift_reg_load
+	
+	property r_shift_reg_load;
+    	@(posedge clk) disable iff (rst_n == '0)
+   	(req_out && play_in) |-> (shift_r == audio_r);
+   	endproperty
+
+	ar_shift_reg_load: assert property(r_shift_reg_load) else assert_error("ar_shift_reg_load");
+	cf_shift_reg_load: cover property(r_shift_reg_load);
+	
+	// shift_register : ar_shift_reg_shift
+	
+	property r_shift_reg_shift;
+    	@(posedge clk & negedge sck_out) disable iff (rst_n == '0)
+    (!req_out) |-> (shift_r[46:0] == $past(shift_r[47:1]));
+   	endproperty
+
+	ar_shift_reg_shift: assert property(r_shift_reg_shift) else assert_error("ar_shift_reg_shift");
+	cf_shift_reg_shift: cover property(r_shift_reg_shift);
+	
+	// shift_register : ar_shift_reg_zero
+
+	property r_shift_reg_zero;
+    	@(posedge clk) disable iff (rst_n == '0)
+    (play_in) |-> (!shift_r && audio_r);
+	endproperty
+
+	ar_shift_reg_zero : assert property(r_shift_reg_zero) else $error("ar_shift_reg_zero");
+	cf_shift_reg_zero: cover property(r_shift_reg_zero);
 
 `endif
    
