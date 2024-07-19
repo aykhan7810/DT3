@@ -193,7 +193,7 @@ module i2s_unit_svamod
 	endproperty
 
 	ar_cfg_r_stable: assert property(r_cfg_r_stable) else assert_error("ar_cfg_r_stable");
-	cf_cfg_r_stable: cover property(r_cfg_r_stable);
+	cr_cfg_r_stable: cover property(r_cfg_r_stable);
 
    
     // mode_control : ar_output_standby_mode
@@ -204,17 +204,17 @@ module i2s_unit_svamod
    	endproperty
 
 	ar_output_standby_mode: assert property(r_output_standby_mode) else assert_error("ar_output_standby_mode");
-	cf_output_standby_mode: cover property(r_output_standby_mode);
+	cr_output_standby_mode: cover property(r_output_standby_mode);
 	
-	// config_interface : ar_config_register_update
+	// config_interface : ar_cfg_r_update
 	
-	property r_config_register_update;
+	property r_cfg_r_update;
     	@(posedge clk) disable iff (rst_n == '0)
    	(!play_in && cfg_in) |-> (cfg_r == cfg_reg_in[1:0]);
    	endproperty
 
-	ar_config_register_update: assert property(r_config_register_update) else assert_error("ar_output_standby_mode");
-	cf_config_register_update: cover property(r_config_register_update);
+	ar_cfg_r_update: assert property(r_cfg_r_update) else assert_error("ar_cfg_r_update");
+	cr_cfg_r_update: cover property(r_cfg_r_update);
 	
 	// audio_interface : ar_audio_reg_behavior
 	
@@ -224,7 +224,7 @@ module i2s_unit_svamod
    	endproperty
 
 	ar_audio_reg_behavior: assert property(r_audio_reg_behavior) else assert_error("ar_audio_reg_behavior");
-	cf_audio_reg_behavior: cover property(r_audio_reg_behavior);
+	cr_audio_reg_behavior: cover property(r_audio_reg_behavior);
 	
 	// audio_interface : ar_audio_reg_standby
 	
@@ -234,7 +234,7 @@ module i2s_unit_svamod
    	endproperty
 
 	ar_audio_reg_standby: assert property(r_audio_reg_standby) else assert_error("ar_audio_reg_standby");
-	cf_audio_reg_standby: cover property(r_audio_reg_standby);
+	cr_audio_reg_standby: cover property(r_audio_reg_standby);
 	
 	// data_request : ar_req_out_timing
 	
@@ -244,7 +244,7 @@ module i2s_unit_svamod
    	endproperty
 
 	ar_req_out_timing: assert property(r_req_out_timing) else assert_error("ar_req_out_timing");
-	cf_req_out_timing: cover property(r_req_out_timing);
+	cr_req_out_timing: cover property(r_req_out_timing);
 	
 	
 	// shift_register : ar_shift_reg_load
@@ -255,7 +255,7 @@ module i2s_unit_svamod
    	endproperty
 
 	ar_shift_reg_load: assert property(r_shift_reg_load) else assert_error("ar_shift_reg_load");
-	cf_shift_reg_load: cover property(r_shift_reg_load);
+	cr_shift_reg_load: cover property(r_shift_reg_load);
 	
 	// shift_register : ar_shift_reg_shift
 	
@@ -265,17 +265,17 @@ module i2s_unit_svamod
    	endproperty
 
 	ar_shift_reg_shift: assert property(r_shift_reg_shift) else assert_error("ar_shift_reg_shift");
-	cf_shift_reg_shift: cover property(r_shift_reg_shift);
+	cr_shift_reg_shift: cover property(r_shift_reg_shift);
 	
 	// shift_register : ar_shift_reg_zero
 
 	property r_shift_reg_zero;
     	@(posedge clk) disable iff (rst_n == '0)
-    (play_in) |-> (!shift_r && audio_r);
+    (play_in) |-> (!shift_r && !audio_r);
 	endproperty
 
 	ar_shift_reg_zero : assert property(r_shift_reg_zero) else $error("ar_shift_reg_zero");
-	cf_shift_reg_zero: cover property(r_shift_reg_zero);
+	cr_shift_reg_zero: cover property(r_shift_reg_zero);
 
 `endif
    
