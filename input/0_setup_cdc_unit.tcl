@@ -30,7 +30,7 @@ set SYSTEMC_MODULES          {  "cdc_unit"  }
 set SDC_FILE              input/${DESIGN_NAME}.sdc
 
 set CLOCK_NAMES           {"clk"   "mclk_in" }
-set CLOCK_PERIODS         { 17.5      54.25  }
+set CLOCK_PERIODS         { 18.5      54.25  }
 set CLOCK_UNCERTAINTIES   { 0.0         0.0  }
 set CLOCK_LATENCIES       { 0.0         0.0  }
 set INPUT_DELAYS          {   0           0  }

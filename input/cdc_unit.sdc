@@ -4,7 +4,7 @@
 
 # 1. Define clock period and clock edge times in ns
 
-create_clock -name clk     -period 17.5  clk
+create_clock -name clk     -period 18.5  clk
 create_clock -name mclk_in -period 54.25 mclk_in
 
 set_clock_groups -asynchronous -name cdc_unit_clk_domains -group clk -group mclk_in
