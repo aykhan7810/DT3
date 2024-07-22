@@ -8,6 +8,8 @@ void dsp_unit::dsp_proc()
   bool                clr_in_v;
   sc_int<DATABITS>    audio0_in_v;
   sc_int<DATABITS>    audio1_in_v;
+  sc_int<ACCBITS>     fir_30l_accum, fir_30r_accum, fir_330l_accum, fir_330r_accum;
+  sc_int<SUMBITS>     left_sum, right_sum;
   sc_int<DATABITS>    filtered0_v;
   sc_int<DATABITS>    filtered1_v;
   sc_int<DATABITS+16> scaled0_v;
@@ -24,13 +26,14 @@ void dsp_unit::dsp_proc()
     dsp0_out.write(0);
     dsp1_out.write(0);
     valid_out.write(0);
-  DATA_RESET_LOOP: for (int i=0; i < FILTER_TAPS; ++i)
+    
+    // To do: reset all member variables you declared -------
+    
+    DATA_RESET_LOOP: for (int i=0; i < FILTER_TAPS; ++i)
       {
 	data0_r[i] = 0;
 	data1_r[i] = 0;
       }
-    
-    // To do: reset all member variables you declared -------
 
     // ------------------------------------------------------
 
@@ -60,6 +63,12 @@ void dsp_unit::dsp_proc()
 	if (clr_in_v)
 	  {
 	    // ----- To do: add code for clear operation  ---------------
+	    
+	    for (int i = 0; i < FILTER_TAPS; ++i)
+        {
+        	data0_r[i] = 0;
+            data1_r[i] = 0;
+        }
 
 	    // ----------------------------------------------------------
 
@@ -80,6 +89,36 @@ void dsp_unit::dsp_proc()
 	      {
 		// ----- To do: add code for filter --------------------
 		
+		// Shift registers for new input
+        SHIFT_LOOP: for (int i = FILTER_TAPS-1; i > 0; --i)
+        {
+        	data0_r[i] = data0_r[i-1];
+            data1_r[i] = data1_r[i-1];
+        }
+        data0_r[0] = audio0_in_v;
+        data1_r[0] = audio1_in_v;
+
+        // FIR filters
+        fir_30l_accum = 0;
+        fir_30r_accum = 0;
+        fir_330l_accum = 0;
+        fir_330r_accum = 0;
+
+        FIR_LOOP: for (int i = 0; i < FILTER_TAPS; ++i)
+        {
+        	fir_30l_accum += data0_r[i] * dsp_regs_r[i].read();
+            fir_30r_accum += data1_r[i] * dsp_regs_r[i + FILTER_TAPS].read();
+            fir_330l_accum += data0_r[i] * dsp_regs_r[i + 2*FILTER_TAPS].read();
+            fir_330r_accum += data1_r[i] * dsp_regs_r[i + 3*FILTER_TAPS].read();
+        }
+
+        left_sum = fir_30l_accum + fir_330r_accum;
+        right_sum = fir_30r_accum + fir_330l_accum;
+
+        // Scale and assign filtered values
+        filtered0_v = left_sum >> (31 + 1);
+        filtered1_v = right_sum >> (31 + 1);
+		
 
 		// ------------------------------------------------
 	      }
@@ -92,6 +131,10 @@ void dsp_unit::dsp_proc()
 	    if (mono_r.read())
 	      {
 		// ----- To do: add code for mono mode ------------
+		
+		sc_int<DATABITS + 16> mono_v = (scaled0_v + scaled1_v) >> 1;
+        scaled0_v = mono_v;
+        scaled1_v = mono_v;
 
 		// ------------------------------------------------
 	      }

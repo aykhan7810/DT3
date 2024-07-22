@@ -7,7 +7,7 @@
 #########################################################################################
 
 # To do: Specify your clk period
-netlist clock clk     -period 17.5
+netlist clock clk     -period 18.5
 netlist clock mclk_in -period 54.25347222
 
 # Resets

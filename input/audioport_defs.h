@@ -111,8 +111,8 @@
 
 #define DATABITS      24
 #define COEFFBITS     32
-#define ACCBITS       2
-#define SUMBITS       2
+#define ACCBITS       DATABITS + COEFFBITS
+#define SUMBITS       ACCBITS + 1
 
 // e: These are needed in the testbench
 

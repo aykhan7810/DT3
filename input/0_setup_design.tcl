@@ -6,8 +6,8 @@
 #set DESIGN_NAME "audioport"
 #set DESIGN_NAME "control_unit"
 #set DESIGN_NAME "i2s_unit"
-set DESIGN_NAME "cdc_unit"
-#set DESIGN_NAME "dsp_unit"
+#set DESIGN_NAME "cdc_unit"
+set DESIGN_NAME "dsp_unit"
 
 if [info exists env(FORCED_DESIGN_NAME) ] {
     set DESIGN_NAME $env(FORCED_DESIGN_NAME)

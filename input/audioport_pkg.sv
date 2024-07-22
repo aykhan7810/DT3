@@ -153,7 +153,9 @@ package audioport_pkg;
    // g: dsp_unit max latency
    //----------------------------------------------------------------   
 
-   localparam int 	    DSP_UNIT_MAX_LATENCY = 100;
+   localparam int 	    DSP_UNIT_SAFETY_MARGIN = 50;
+   localparam int 	    DSP_UNIT_MAX_LATENCY = CLK_DIV_192000 - (CDC_PULSESYNC_LATENCY + CDC_DATASYNC_INTERVAL) - DSP_UNIT_SAFETY_MARGIN
+;
 
 endpackage
    

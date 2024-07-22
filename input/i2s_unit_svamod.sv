@@ -29,13 +29,14 @@ module i2s_unit_svamod
    input logic [31:0] cfg_reg_in,
    input logic 	      sck_out,
    input logic 	      ws_out,
-   input logic 	      sdo_out
+   input logic 	      sdo_out,
+   input logic	[1:0] cfg_r,
+	input logic play_r,
+	input logic req_r,
+	input logic [47:0] audio_r,
+	input logic [47:0] shift_r
 `ifndef SYSTEMC_DUT
-	input logic	[1:0] cfg_r;
-	input logic play_r;
-	input logic req_r;
-	input logic [47:0] audio_r;
-	input logic [47:0] shift_r;
+	
 
 `endif   
    );
@@ -187,7 +188,7 @@ module i2s_unit_svamod
 
 	// cfg_r_stable : ar_cfg_r_stable
 
-	property r_cfg_r_stability;
+	property r_cfg_r_stable;
     	@(posedge clk) disable iff (rst_n == '0)
     (play_r | !cfg_in) |-> $stable(cfg_r);
 	endproperty
@@ -260,7 +261,7 @@ module i2s_unit_svamod
 	// shift_register : ar_shift_reg_shift
 	
 	property r_shift_reg_shift;
-    	@(posedge clk & negedge sck_out) disable iff (rst_n == '0)
+    	@(posedge clk) disable iff (rst_n == '0)
     (!req_out) |-> (shift_r[46:0] == $past(shift_r[47:1]));
    	endproperty
 
